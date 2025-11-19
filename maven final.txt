@@ -44,3 +44,9 @@ mvn test
 
 mvn exec:java -Dexec.mainClass="com.example.App"
 
+
+
+sudo systemctl start jenkins
+
+sudo systemctl enable jenkins
+
