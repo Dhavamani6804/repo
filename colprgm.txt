@@ -1,0 +1,24 @@
+object MarksApp extends App {
+  val marks   = List(45, 67, 89, 32, 76)
+  val sqmarks = marks.map(m => m * m)
+  val above50 = marks.filter(_ > 50)
+  val total   = marks.foldLeft(0)(_ + _)
+
+  println(s"Original marks : $marks")
+  println(s"Square marks   : $sqmarks")
+  println(s"Above 50 marks : $above50")
+  println(s"Total marks    : $total")
+}
+
+
+
+object Prgm extends App{
+val sub = Set("Math","Science","Eng","Math")
+val stdmark = Map("Alice"->67,"Bob"->45,"Charlie"->89,"David"->32,"Eve"->76)
+val highest = stdmark.values.max
+val lowest = stdmark.values.min
+println(s"Subjects : $sub")
+println(s"Student marks : $stdmark")
+println(s"High mark : $highest")
+println(s"Low mark : $lowest")
+}
