@@ -1,0 +1,13 @@
+nano list.scala
+
+scalac list.scala 
+
+scala MarksApp       
+
+
+
+ nano prgm2.scala
+
+ scalac prgm2.scala
+
+ scala Prgm

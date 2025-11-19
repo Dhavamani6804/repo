@@ -1,0 +1,74 @@
+source ~/pyspark-env/bin/activate
+
+which python
+python -V
+python -m pip show pyspark || echo "pyspark not found in venv"
+
+
+
+
+cat > ~/stocks_ma.py <<'PY'
+# stocks_ma.py
+from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+from pathlib import Path
+import shutil
+
+spark = SparkSession.builder.appName("StocksMA").getOrCreate()
+
+data = [
+ ("2025-08-01","AAPL",180),
+ ("2025-08-02","AAPL",182),
+ ("2025-08-03","AAPL",181),
+ ("2025-08-04","AAPL",185),
+ ("2025-08-01","TSLA",210),
+ ("2025-08-02","TSLA",215),
+ ("2025-08-03","TSLA",220),
+ ("2025-08-04","TSLA",205),
+ ("2025-08-01","MSFT",320),
+ ("2025-08-02","MSFT",325),
+ ("2025-08-03","MSFT",322),
+ ("2025-08-04","MSFT",330)
+]
+
+columns = ["Date","Stock","Close"]
+df = spark.createDataFrame(data, schema=columns).withColumn("Date", F.to_date("Date","yyyy-MM-dd"))
+
+w = Window.partitionBy("Stock").orderBy("Date").rowsBetween(-2, 0)
+res = df.withColumn("MA_3", F.round(F.avg("Close").over(w), 2)).orderBy("Stock","Date")
+res.show(100, False)
+
+# compute absolute output dir in real home
+home = Path.home()               # e.g. /home/dhava
+out_dir = home / "stocks_ma3_output"
+
+# remove previous partial output if any
+if out_dir.exists():
+    shutil.rmtree(out_dir)
+
+out_uri = f"file://{out_dir.as_posix()}"
+print('Writing results to:', out_uri)
+res.coalesce(1).write.mode("overwrite").option("header", True).csv(out_uri)
+
+spark.stop()
+PY
+
+
+
+
+
+
+
+source ~/pyspark-env/bin/activate
+unset SPARK_HOME   # ensure no stale SPARK_HOME interferes
+python ~/stocks_ma.py
+
+
+
+
+
+echo "Output directory listing:"
+ls -lh ~/stocks_ma3_output
+echo "Show CSV contents (first 40 lines):"
+head -n 40 ~/stocks_ma3_output/part-*.csv

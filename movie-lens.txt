@@ -1,0 +1,61 @@
+ cd ~
+
+ wget https://files.grouplens.org/datasets/movielens/ml-latest-small.zip
+
+ sudo apt install -y unzip
+
+ unzip ml-latest-small.zip
+
+ mkdir -p ~/hadoop_movielens
+
+ cd ~/hadoop_movielens
+
+ cat > mapper_ratings.py <<'PY'
+#!/usr/bin/env python3
+import sys
+first = True
+for line in sys.stdin:
+    line = line.rstrip('\n\r')
+    if not line:
+        continue
+    if first:
+        first = False
+        if line.lower().startswith("userid,") or line.lower().startswith("userId,"):
+            continue
+    parts = line.split(',')
+    if len(parts) >= 2:
+        movieId = parts[1].strip()
+        if movieId:
+            print(f"{movieId}\t1")
+PY
+
+ cat > reducer_sum_safe.py <<'PY'
+#!/usr/bin/env python3
+import sys
+import signal
+from itertools import groupby
+from operator import itemgetter
+
+# Prevent Python from printing BrokenPipeError tracebacks when pipe closed (e.g. head)
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
+def read_mapper_output(file):
+    for line in file:
+        line = line.rstrip('\n\r')
+        if not line:
+            continue
+        parts = line.split('\t', 1)
+        if len(parts) == 2:
+            yield parts[0], parts[1]
+
+data = read_mapper_output(sys.stdin)
+for key, group in groupby(sorted(data, key=itemgetter(0)), key=itemgetter(0)):
+    total = sum(int(count) for _, count in group)
+    print(f"{key}\t{total}")
+PY
+
+
+chmod 755 reducer_sum_safe.py
+
+ cat ~/ml-latest-small/ratings.csv | ./mapper_ratings.py | sort | ./reducer_sum_safe.py | head -n 10
+

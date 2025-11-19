@@ -1,0 +1,10 @@
+ nano AbstractAndTraitDemo.scala
+
+ scalac AbstractAndTraitDemo.scala
+
+ scala AbstractAndTraitDemo
+
+nano InsuranceDemo.scala
+
+
+nano VehicleDemo.scala

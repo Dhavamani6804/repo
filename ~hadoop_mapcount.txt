@@ -1,0 +1,23 @@
+ mkdir -p ~/hadoop_mapcount
+
+ cd ~/hadoop_mapcount
+
+nano mapper.py
+
+ chmod +x mapper.py
+
+ nano reducer.py
+
+ chmod +x reducer.py
+
+ cat > sample.txt <<EOF
+
+> hello world
+> hellow from hadoop
+> hello from hadoop streaming
+> hello hdfs
+> EOF
+
+ ls -l
+
+ cat sample.txt | ./mapper.py | sort | ./reducer.py

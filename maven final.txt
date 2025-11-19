@@ -1,0 +1,46 @@
+rm -rf myapp
+
+ mvn archetype:generate \
+  -DgroupId=com.example \
+  -DartifactId=myapp \
+  -DarchetypeGroupId=org.apache.maven.archetypes \
+  -DarchetypeArtifactId=maven-archetype-quickstart \
+  -DarchetypeVersion=1.4 \
+  -DinteractiveMode=false
+
+cd myapp
+
+ls
+
+cd src/main/java/com/example
+
+nano App.java
+
+cd ~
+
+cd myapp
+
+cd src/test/java/com/example
+
+nano AppTest.java
+
+cd ~
+
+cd myapp/
+
+
+nano pom.xml
+
+
+ mvn compile
+
+
+mvn test
+
+
+ mvn package
+
+
+
+mvn exec:java -Dexec.mainClass="com.example.App"
+
