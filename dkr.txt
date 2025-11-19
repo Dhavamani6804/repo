@@ -1,0 +1,131 @@
+mkdir C:\Users\welcome\Desktop\regapp-node
+cd C:\Users\welcome\Desktop\regapp-node
+npm init -y
+npm install express
+
+
+
+
+
+//app.js
+
+  const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 8080; // Allows Kubernetes/Docker to map ports dynamically [cite: 38, 41]
+
+app.get('/', (req, res) => res.send('Hello from Node.js Docker App!')); // Basic HTTP GET route [cite: 39, 42]
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+
+Dockerfile
+
+FROM node:20 
+WORKDIR /app 
+COPY package*.json ./
+RUN npm install 
+COPY . . 
+EXPOSE 8080 
+CMD ["npm", "start"] 
+
+
+docker build -t regapp-node:1.0 .
+
+
+  [cite_start]docker run -p 8080:8080 regapp-node:1.0 
+
+
+
+
+  
+docker login
+
+
+
+
+  docker tag regapp-node:1.0 <your-dockerhub-username>/regapp-node:1.0
+
+
+
+    docker push <your-dockerhub-username>/regapp-node:1.0
+
+
+
+regapp-node-deploy.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: regapp-node-deployment
+spec:
+  [cite_start]replicas: 3 # Creates 3 replicas (pods) [cite: 78]
+  selector:
+    matchLabels:
+      app: regapp-node
+  template:
+    metadata:
+      labels:
+        app: regapp-node
+    spec:
+      containers:
+      - name: regapp-node
+        [cite_start]image: <your-dockerhub-username>/regapp-node:1.0 
+        ports:
+        - containerPort: 8080
+
+
+
+
+
+
+regapp-node-service.yml
+          
+apiVersion: v1
+kind: Service
+metadata:
+  name: regapp-node-service
+spec:
+  selector:
+    app: regapp-node
+  ports:
+  - [cite_start]port: 8080 
+    [cite_start]targetPort: 8080 
+  [cite_start]type: LoadBalancer 
+
+
+
+
+
+kubectl config use-context docker-desktop
+
+
+[cite_start]kubectl apply -f regapp-node-deploy.yml 
+[cite_start]kubectl apply -f regapp-node-service.yml
+
+[cite_start]kubectl get pods 
+[cite_start]kubectl get svc
+
+
+kubectl port-forward service/regapp-node-service 8082:8080
+
+kubectl scale deployment regapp-node-deployment --replicas=5
+
+
+kubectl get pods 
+
+
+kubectl get pods -o wide
+kubectl get svc -o wide
+kubectl describe deployment regapp-node-deployment
+
+
+
+
+
+
+
+    
+
+      
